@@ -7,24 +7,26 @@ const orders = require('./routes/api/orders')
 const userRoute = require('./routes/user');
 const product = require('./routes/api/products');
 const customer = require('./routes/api/customer');
+const upload = require('./routes/api/upload');
+
+
 const path = require('path');
+const methodOverride = require('method-override');
 
 const app = express();
 
-
+//@use cors 
 app.use(cors());
 
 //body parser 
 app.use(bodyParser.json());
-// app.use((req, res, next) => {
-//     res.header('Access-Control-Allow-Origin', '*');
-//     next();
-//   });
+
+app.use(methodOverride('_method'));
+
 //DB config
 const db = require('./config/keys').mongoURI;
-//mongoose.connect('mongodb://localhost/test',{useNewUrlParser:true})
-// 
-//connect to mongo
+
+
 mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
     .then(() => {
         console.log('MogoDB Connected!')
@@ -36,6 +38,7 @@ app.use('/api/orders',orders);
 app.use('/users',userRoute);
 app.use('/api/products',product);
 app.use('/api/customers',customer);
+app.use('/api/upload',upload);
 
 
 // Serve static assets if in production
