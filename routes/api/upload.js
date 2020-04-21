@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const { productValidation } = require('../../validation')
 const verify = require('../verifyToken');
 const db = require('../../config/keys').mongoURI;
 const crypto = require('crypto');
@@ -14,7 +13,7 @@ const path = require('path');
 
 const conn = mongoose.createConnection(db, {
   useNewUrlParser: true,
-  //useUnifiedTopology: true,
+  useUnifiedTopology: true,
 });
 //init gfs
 let gfs;
@@ -27,6 +26,7 @@ conn.once('open', () => {
 //create storage engine
 var storage = new GridFsStorage({
   url: db,
+  options: {useUnifiedTopology: true},
   file: (req, file) => {
     return new Promise((resolve, reject) => {
       crypto.randomBytes(16, (err, buf) => {
@@ -47,11 +47,11 @@ const upload = multer({
   storage,
   limits: {
     files: 5, // allow up to 5 files per request,
-    fieldSize: 2 * 1024 * 1024 // 2 MB (max file size)
+    fileSize:  10 * 1024 * 1024 // 5 MB (max file size)
   },
   fileFilter: (req, file, cb) => {
     // allow images only
-    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png|gif|JPG|PNG|JPEG|GIF)$/)) {
       return cb(new Error('Only image are allowed.'), false);
     }
     cb(null, true);
@@ -59,7 +59,7 @@ const upload = multer({
 });
 
 //@route Post upload
-router.post('/', upload.single('photo'), async (req, res) => {
+router.post('/', verify, upload.single('photo'), async (req, res) => {
   try {
     const photo = req.file;
 
@@ -79,7 +79,6 @@ router.post('/', upload.single('photo'), async (req, res) => {
         mimetype: p.mimetype,
         size: p.size
       }));
-
       // send response
       res.send({
         status: true,
@@ -96,10 +95,10 @@ router.post('/', upload.single('photo'), async (req, res) => {
 
 
 //@route POST many image
-router.post('/upload-photos', upload.array('photos', 8), async (req, res) => {
+router.post('/upload-photos', verify, upload.array('photos', 8), async (req, res) => {
   try {
     const photos = req.files;
-
+    console.log(photos)
     // check if photos are available
     if (!photos) {
       res.status(400).send({
@@ -108,14 +107,14 @@ router.post('/upload-photos', upload.array('photos', 8), async (req, res) => {
       });
     } else {
       let data = [];
-
       // iterate over all photos
       photos.map(p => data.push({
+        filename: p.filename,
         name: p.originalname,
         mimetype: p.mimetype,
         size: p.size
       }));
-
+      
       // send response
       res.send({
         status: true,
@@ -183,14 +182,14 @@ router.get('/image/:filename', (req, res) => {
 });
 
 //@route delete 
-// files/del/:id
+// files/del/:filename
 // Delete chunks from the db
-router.delete("/image/:id", async (req, res) => {
-  gfs.remove({ _id: req.params.id, root: 'uploads'}, (err) => {
+router.delete("/image/:filename", verify, async (req, res) => {
+  gfs.remove({ filename: req.params.filename, root: 'uploads' }, (err) => {
     if (err) return res.status(500).json({ success: false })
-      return res.json({ success: true });
-    })
- });
+    return res.json({ success: true });
+  })
+});
 
 
 module.exports = router;

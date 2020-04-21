@@ -20,14 +20,15 @@ router.post('/', verify, (req, res) => {
     //let validate the data before we a user
     console.log(req.body)
     const { error } = productValidation(req.body);
-    
+    console.log(error);
     if (error) return res.status(400).json(error.details[0].message);
 
     const newProduct = new Product({
         productId: req.body.productId,
         title: req.body.title,
         description: req.body.description,
-        price: req.body.price
+        price: req.body.price,
+        images: req.body.images,
     });
     newProduct.save()
         .then(product => res.json(product))
@@ -57,7 +58,8 @@ router.patch('/:productId', verify, async (req, res) => {
                     productId: req.body.productId,
                     title: req.body.title,
                     description: req.body.description,
-                    price: req.body.price
+                    price: req.body.price,
+                    images: req.body.images,
                 }
             })
         res.json(updateProduct);

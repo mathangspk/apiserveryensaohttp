@@ -145,6 +145,7 @@ const productValidation = (data) => {
                 })
             }),
         status: Joi.number(),
+        images: Joi.array(),
     }
     return Joi.validate(data, schema)
 }

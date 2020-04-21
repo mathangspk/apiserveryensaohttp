@@ -21,6 +21,11 @@ const ProductSchema = mongoose.Schema({
         type: Number,
         required: true
     },
+    images:[{
+        filename: {
+            type: String,
+        }
+    }],
     date: {
         type:Date,
         default: Date.now
