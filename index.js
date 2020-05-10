@@ -8,6 +8,7 @@ const userRoute = require('./routes/user');
 const product = require('./routes/api/products');
 const customer = require('./routes/api/customer');
 const upload = require('./routes/api/upload');
+const post = require('./routes/api/post');
 
 
 const path = require('path');
@@ -39,6 +40,7 @@ app.use('/users',userRoute);
 app.use('/api/products',product);
 app.use('/api/customers',customer);
 app.use('/api/upload',upload);
+app.use('/api/blogs',post);
 
 
 // Serve static assets if in production
